@@ -2,6 +2,7 @@ import os
 import requests
 import smtplib
 import time
+import schedule
 from datetime import datetime
 from pathlib import Path
 from bs4 import BeautifulSoup
@@ -85,7 +86,7 @@ def fetch_contents(page):
 
     return result
 
-def main():
+def scrap_591_and_send_html_mail():
     base_url = 'https://rent.591.com.tw'
     
     with sync_playwright() as p:
@@ -119,6 +120,14 @@ def main():
             page.locator('#rent-list-app > div > div.list-container-content > div > section.vue-public-list-page > div > a.pageNext').click()
     
         send_html_mail('\n'.join(total_results))
+
+def main():
+    print('start 591 scrap bot...')
+    schedule.every().day.at('12:00').do(scrap_591_and_send_html_mail)
+
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
         
 if __name__ == '__main__':
     main()
