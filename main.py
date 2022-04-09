@@ -1,27 +1,37 @@
 import os
-import requests
-import smtplib
+import sys
 import time
-import schedule
 import asyncio
-from datetime import datetime
+import smtplib
+import requests
+import schedule
 from pathlib import Path
+from datetime import datetime
 from bs4 import BeautifulSoup
 from email.message import EmailMessage
 
 from pyppeteer import launch
 from LinkObject import LinkObject
 
-def send_html_mail(msg):
+def read_config():
+    if not os.path.exists(os.path.join('config', 'config.yaml')):
+        print('config file not found! please provide config.yaml')
+        sys.exit(1)
+
+    with open(os.path.join('config', 'config.yaml')) as file:
+        config = yaml.safe_load(file.read())
+        return config
+
+def send_html_mail(msg, username, password, to_username):
     current_date = datetime.now().date()
     port = 587
-    account = 'tommy0625tung@hotmail.com'
-    password = 'tifa2056'
+    account = username
+    password = password
 
     email = EmailMessage()
     email['Subject'] = f'{current_date} houses for rental'
-    email['From'] = 'tommy0625tung@hotmail.com'
-    email['To'] = 'chen0625tung@gmail.com'
+    email['From'] = username
+    email['To'] = to_username
     email.set_content(msg, subtype='html')
 
     with smtplib.SMTP('smtp-mail.outlook.com', port) as server:
@@ -75,12 +85,13 @@ async def fetch_contents(page):
             imgs = photos.find_all(lambda tag: tag.has_attr('data-original'))
             for img in imgs:
                 link_obj.photos.append(img['data-original'])
-            result.append(link_obj.to_html())
+            result.append(link_obj)
 
     return result
 
 async def scrap_591_and_send_html_mail():
     base_url = 'https://rent.591.com.tw'
+    config = read_config()
     
     browser = await launch(headless=True, executablePath='/usr/bin/chromium-browser')
     page = await browser.newPage()
@@ -88,10 +99,10 @@ async def scrap_591_and_send_html_mail():
 
     # rent range start
     page.waitForSelector('#rent-list-app > div > div.vue-filter-container > section:nth-child(3) > ul > li.filter-item-input > div > input:nth-child(1)')
-    await page.type('#rent-list-app > div > div.vue-filter-container > section:nth-child(3) > ul > li.filter-item-input > div > input:nth-child(1)', '5000')
+    await page.type('#rent-list-app > div > div.vue-filter-container > section:nth-child(3) > ul > li.filter-item-input > div > input:nth-child(1)', config['range-start'])
 
     page.waitForSelector('#rent-list-app > div > div.vue-filter-container > section:nth-child(3) > ul > li.filter-item-input > div > input:nth-child(3)')
-    await page.type('#rent-list-app > div > div.vue-filter-container > section:nth-child(3) > ul > li.filter-item-input > div > input:nth-child(3)', '12000')
+    await page.type('#rent-list-app > div > div.vue-filter-container > section:nth-child(3) > ul > li.filter-item-input > div > input:nth-child(3)', config['range-end'])
 
     page.waitForSelector('#rent-list-app > div > div.vue-filter-container > section:nth-child(3) > ul > li.filter-item-input > div > button')
     await page.click('#rent-list-app > div > div.vue-filter-container > section:nth-child(3) > ul > li.filter-item-input > div > button')
@@ -99,19 +110,22 @@ async def scrap_591_and_send_html_mail():
     # scroll to bottom to trigger javascript load
     # fetch first 3 pages
     total_results = []
-    for i in range(3):
+    element_count = config['element-count']
+    while len(total_results) < element_count:
         page.waitFor(3000)
         await scroll_to_bottom(page)
     
         # content list
         page_contents = await fetch_contents(page)
+        page_contents = list(filter(lambda x: x.price <= int(config['range-end']), page_contents))
         total_results.extend(page_contents)
 
         # next page
         page.waitForSelector('#rent-list-app > div > div.list-container-content > div > section.vue-public-list-page > div > a.pageNext')
         await page.click('#rent-list-app > div > div.list-container-content > div > section.vue-public-list-page > div > a.pageNext')
-
-    send_html_mail('\n'.join(total_results))
+    
+    total_results = list(map(lambda x: x.to_html(), total_results))
+    send_html_mail('\n'.join(total_results), config['email']['from']['username'], config['email']['from']['password'], config['email']['to']['username'])
 
 def wrapper_func():
     print('running function...')

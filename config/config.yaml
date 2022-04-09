@@ -1,0 +1,10 @@
+email:
+  from:
+    username: tommy0625tung
+    password: tifa2056
+  to:
+    username: chen0625tung@gmail.com
+
+element-count: 30
+range-start: 5000
+range-end: 12000
