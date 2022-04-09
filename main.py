@@ -82,7 +82,7 @@ async def fetch_contents(page):
 async def scrap_591_and_send_html_mail():
     base_url = 'https://rent.591.com.tw'
     
-    browser = await launch(headless=True)
+    browser = await launch(headless=True, executablePath='/usr/bin/chromium-browser')
     page = await browser.newPage()
     await page.goto(base_url)
 
@@ -113,14 +113,20 @@ async def scrap_591_and_send_html_mail():
 
     send_html_mail('\n'.join(total_results))
 
-def main():
-    # print('start 591 scrap bot...')
-    # schedule.every().day.at('12:00').do(scrap_591_and_send_html_mail)
-
-    # while True:
-    #     schedule.run_pending()
-    #     time.sleep(1)
+def wrapper_func():
+    print('running function...')
+    print(f'{datetime.now()}')
     asyncio.get_event_loop().run_until_complete(scrap_591_and_send_html_mail())
+    print(f'function complete: {datetime.now()}')
+
+def main():
+    print('start 591 scrap bot...')
+    schedule.every().day.at('05:00').do(wrapper_func)
+
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+    # asyncio.get_event_loop().run_until_complete(scrap_591_and_send_html_mail())
         
 if __name__ == '__main__':
     main()
