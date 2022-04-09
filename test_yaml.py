@@ -6,6 +6,7 @@ def main():
         config = yaml.safe_load(file.read())
         print(config)
         print(config['element-count'])
+        print(type(config['range-start']))
 
 if __name__ == '__main__':
     main()

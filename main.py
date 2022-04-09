@@ -1,6 +1,8 @@
 import os
+import re
 import sys
 import time
+import yaml
 import asyncio
 import smtplib
 import requests
@@ -79,6 +81,8 @@ async def fetch_contents(page):
 
             price_tag = item.find('div', 'item-price-text')
             link_obj.price = price_tag.text
+            price_tag_int = int(re.sub(r'\W', '', price_tag.text)[:-2])
+            link_obj.price_int = price_tag_int
 
             photos = item.find('ul', 'carousel-list')
             link_obj.photos = []
@@ -99,10 +103,10 @@ async def scrap_591_and_send_html_mail():
 
     # rent range start
     page.waitForSelector('#rent-list-app > div > div.vue-filter-container > section:nth-child(3) > ul > li.filter-item-input > div > input:nth-child(1)')
-    await page.type('#rent-list-app > div > div.vue-filter-container > section:nth-child(3) > ul > li.filter-item-input > div > input:nth-child(1)', config['range-start'])
+    await page.type('#rent-list-app > div > div.vue-filter-container > section:nth-child(3) > ul > li.filter-item-input > div > input:nth-child(1)', str(config['range-start']))
 
     page.waitForSelector('#rent-list-app > div > div.vue-filter-container > section:nth-child(3) > ul > li.filter-item-input > div > input:nth-child(3)')
-    await page.type('#rent-list-app > div > div.vue-filter-container > section:nth-child(3) > ul > li.filter-item-input > div > input:nth-child(3)', config['range-end'])
+    await page.type('#rent-list-app > div > div.vue-filter-container > section:nth-child(3) > ul > li.filter-item-input > div > input:nth-child(3)', str(config['range-end']))
 
     page.waitForSelector('#rent-list-app > div > div.vue-filter-container > section:nth-child(3) > ul > li.filter-item-input > div > button')
     await page.click('#rent-list-app > div > div.vue-filter-container > section:nth-child(3) > ul > li.filter-item-input > div > button')
@@ -117,7 +121,7 @@ async def scrap_591_and_send_html_mail():
     
         # content list
         page_contents = await fetch_contents(page)
-        page_contents = list(filter(lambda x: x.price <= int(config['range-end']), page_contents))
+        page_contents = list(filter(lambda x: x.price_int <= config['range-end'], page_contents))
         total_results.extend(page_contents)
 
         # next page
@@ -134,13 +138,13 @@ def wrapper_func():
     print(f'function complete: {datetime.now()}')
 
 def main():
-    print('start 591 scrap bot...')
-    schedule.every().day.at('05:00').do(wrapper_func)
+    # print('start 591 scrap bot...')
+    # schedule.every().day.at('05:00').do(wrapper_func)
 
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
-    # asyncio.get_event_loop().run_until_complete(scrap_591_and_send_html_mail())
+    # while True:
+    #     schedule.run_pending()
+    #     time.sleep(1)
+    asyncio.get_event_loop().run_until_complete(scrap_591_and_send_html_mail())
         
 if __name__ == '__main__':
     main()

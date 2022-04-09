@@ -1,7 +1,8 @@
 class LinkObject:
-    def __init__(self, title='', price='', link='', photos=[]):
+    def __init__(self, title='', price='', price_int=0, link='', photos=[]):
         self.title = title
         self.price = price
+        self.price_int = price_int
         self.link = link
         self.photos = photos
 
@@ -15,5 +16,4 @@ class LinkObject:
         <div>
             {photoImgTags}
         </div>
-        <hr>
         '''
