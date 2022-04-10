@@ -7,6 +7,8 @@ def main():
         print(config)
         print(config['element-count'])
         print(type(config['range-start']))
+        print(config['email']['to']['username'])
+        print(','.join(config['email']['to']['username']))
 
 if __name__ == '__main__':
     main()

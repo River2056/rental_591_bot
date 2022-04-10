@@ -129,7 +129,7 @@ async def scrap_591_and_send_html_mail():
         await page.click('#rent-list-app > div > div.list-container-content > div > section.vue-public-list-page > div > a.pageNext')
     
     total_results = list(map(lambda x: x.to_html(), total_results))
-    send_html_mail('\n'.join(total_results), config['email']['from']['username'], config['email']['from']['password'], config['email']['to']['username'])
+    send_html_mail('\n'.join(total_results), config['email']['from']['username'], config['email']['from']['password'], ','.join(config['email']['to']['username']))
 
 def wrapper_func():
     print('running function...')
@@ -138,13 +138,13 @@ def wrapper_func():
     print(f'function complete: {datetime.now()}')
 
 def main():
-    # print('start 591 scrap bot...')
-    # schedule.every().day.at('05:00').do(wrapper_func)
+    print('start 591 scrap bot...')
+    schedule.every().day.at('05:00').do(wrapper_func)
 
-    # while True:
-    #     schedule.run_pending()
-    #     time.sleep(1)
-    asyncio.get_event_loop().run_until_complete(scrap_591_and_send_html_mail())
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+    # asyncio.get_event_loop().run_until_complete(scrap_591_and_send_html_mail())
         
 if __name__ == '__main__':
     main()

@@ -3,7 +3,9 @@ email:
     username: tommy0625tung@hotmail.com
     password: tifa2056
   to:
-    username: chen0625tung@gmail.com
+    username: 
+    - chen0625tung@gmail.com
+    - tca3319488@gmail.com
 
 element-count: 30
 range-start: 5000
