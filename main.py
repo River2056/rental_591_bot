@@ -32,11 +32,11 @@ def send_html_mail(msg, username, password, to_username):
 
     email = EmailMessage()
     email['Subject'] = f'{current_date} houses for rental'
-    email['From'] = username
+    email['From'] = account
     email['To'] = to_username
     email.set_content(msg, subtype='html')
 
-    with smtplib.SMTP('smtp-mail.outlook.com', port) as server:
+    with smtplib.SMTP('smtp.office365.com', port) as server:
         server.starttls()
         server.ehlo()
         server.login(account, password)
@@ -129,7 +129,7 @@ async def scrap_591_and_send_html_mail():
         await page.click('#rent-list-app > div > div.list-container-content > div > section.vue-public-list-page > div > a.pageNext')
     
     total_results = list(map(lambda x: x.to_html(), total_results))
-    send_html_mail('\n'.join(total_results), config['email']['from']['username'], config['email']['from']['password'], ','.join(config['email']['to']['username']))
+    send_html_mail('\n'.join(total_results), config['email']['from']['username'], config['email']['from']['password'], ', '.join(config['email']['to']['username']))
 
 def wrapper_func():
     print('running function...')
