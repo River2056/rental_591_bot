@@ -97,7 +97,7 @@ async def scrap_591_and_send_html_mail():
     base_url = 'https://rent.591.com.tw'
     config = read_config()
     
-    browser = await launch(headless=True, executablePath='/usr/bin/chromium-browser')
+    browser = await launch(headless=True, handleSIGINT=False, handleSIGTERM=False, handleSIGHUP=False)
     page = await browser.newPage()
     await page.goto(base_url)
 
@@ -134,6 +134,7 @@ async def scrap_591_and_send_html_mail():
 def wrapper_func():
     print('running function...')
     print(f'{datetime.now()}')
+    # asyncio.set_event_loop(asyncio.SelectorEventLoop())
     asyncio.get_event_loop().run_until_complete(scrap_591_and_send_html_mail())
     print(f'function complete: {datetime.now()}')
 
